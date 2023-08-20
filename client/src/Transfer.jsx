@@ -1,5 +1,7 @@
 import { useState } from "react";
 import server from "./server";
+import { sign } from "../../server/signatures";
+import toast from 'react-hot-toast';
 
 function Transfer({ address, setBalance, privateKey }) {
   const [sendAmount, setSendAmount] = useState("");
@@ -9,20 +11,41 @@ function Transfer({ address, setBalance, privateKey }) {
 
   async function transfer(evt) {
     evt.preventDefault();
+
+    const myPromise = (async () => {
     
-    try {
-      const {
-        data: { balance },
-      } = await server.post(`send`, {
-        sender: address,
-        amount: parseInt(sendAmount),
-        recipient,
-      });
-      setBalance(balance);
-    } catch (ex) {
-      alert(ex.response.data.message);
-    }
-  }
+    const msg = JSON.stringify({ amount: sendAmount});
+    const signature = sign(msg, privateKey);
+    
+  
+try {
+        const {
+          data: { balance },
+        } = await server.post(`send`, {
+          sender: address,
+          msg,
+          signature,
+          recipient,
+        });
+        return setBalance(balance);
+} catch (error) {
+
+  console.log(error)
+  throw new Error(error.response?.data.message || error.message)
+
+}
+
+  })()
+
+  toast.promise(myPromise, {
+    loading: 'Loading',
+    success: 'Transaction Successful',
+    error: (err) => {
+      console.log(err)
+      return ` ${err.toString()}`},
+  });
+}
+
 
   return (
     <form className="container transfer" onSubmit={transfer}>
