@@ -14,9 +14,10 @@ function Transfer({ address, setBalance, privateKey }) {
 
     const myPromise = (async () => {
     
-    const msg = JSON.stringify({ amount: sendAmount});
+    let msg = JSON.stringify({ amount: sendAmount});
     const signature = sign(msg, privateKey);
-    
+
+    // msg+="m"
   
 try {
         const {

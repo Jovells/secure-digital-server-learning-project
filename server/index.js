@@ -45,8 +45,13 @@ app.post("/send", (req, res) => {
   if (!isVerified) {
     return res.status(400).send({ message: "invalid signature" });
   }
+
   const message = JSON.parse(msg)
   const amount = parseInt(message.amount);
+
+  if (amount<0){
+    return res.status(400).send({ message: "invalid amount" });
+  }
 
   const senderRecord = balances.find((record) => record.wallet === sender)
   const recipientRecord = balances.find((record) => record.wallet === recipient)
